@@ -7,3 +7,4 @@ def load_split_data():
     y_test = pd.read_csv("../data/split/y_test.csv").squeeze("columns")
 
     return X_train, X_test, y_train, y_test
+
