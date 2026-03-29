@@ -1,13 +1,20 @@
+from pathlib import Path
+
 import pandas as pd
+from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, confusion_matrix, roc_auc_score
+from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, confusion_matrix, roc_auc_score, \
+    classification_report
+from sklearn.preprocessing import label_binarize
 
+from models.logistic_regression import MODEL_NAME
 from shared.preprocess import build_processor
 from shared.preprocess import clean_raw_data
-
+# Model name
+MODEL_NAME="KNN"
 # Load dataset
 dataset = pd.read_csv("data/Sleep_health_and_lifestyle_dataset.csv")
 
@@ -29,11 +36,11 @@ def split_data(cleaned_data):
 # Build knn model
 def build_knn_model(X_train):
     knn_model=Pipeline([
-        ("preprocess_data", build_processor(X_train)),
-        ("model", KNeighborsClassifier())
+        ("preprocessor", build_processor(X_train)),
+        ("classifier", KNeighborsClassifier())
     ])
-
     return knn_model
+
 
 # Hyperparameter grid for tuning
 param_grid_knn={
@@ -43,41 +50,54 @@ param_grid_knn={
 }
 
 X_train, X_test, y_train, y_test=split_data(load_clean_data())
-knn_model=build_knn_model(X_train)
 
-cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+def grid_search_knn(param_grid_knn, knn_model, X_train, y_train):
+    cross_validation=StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    grid_search_knn=GridSearchCV(
+        knn_model,
+        param_grid=param_grid_knn,
+        cv=cross_validation,
+        scoring="recall_macro",
+    )
+    grid_search_knn.fit(X_train, y_train)
+    return grid_search_knn
 
-grid_search_knn=GridSearchCV(
-    knn_model,
-    param_grid=param_grid_knn,
-    cv=cv
-)
+def model_evaluation(grid_search_knn, X_test, y_test):
+    y_predicted=grid_search_knn.predict(X_test)
+    y_predicted_prob=grid_search_knn.predict_proba(X_test)
 
-# Train the model & prediction
-knn_model.fit(X_train, y_train)
-predicted_result=knn_model.predict(X_test)
-predicted_prob=knn_model.predict_proba(X_test)
+    categories=sorted(y_test.unique())
+    y_test_binary=label_binarize(y_test,categories=categories)
 
-# Evaluation
-accuracy=accuracy_score(y_test, predicted_result)
-precision=precision_score(y_test, predicted_result, average='weighted')
-recall=recall_score(y_test, predicted_result, average='weighted')
-f1=f1_score(y_test, predicted_result, average='weighted')
-roc=roc_auc_score(y_test, predicted_prob, multi_class='ovr', average='weighted')
+    confusionMatrix=confusion_matrix(y_test, y_predicted)
 
-# Confusion matrix
-confusionMatrix_df=confusion_matrix(y_test, predicted_result)
-labels=["None", "Insomnia", "Sleep Apnea"]
-cm_df=pd.DataFrame(
-    confusionMatrix_df,
-    index=labels,
-    columns=labels)
+    metrics={
+        'model': MODEL_NAME,
+        'Accuracy': accuracy_score(y_test, y_predicted),
+        'Precision': precision_score(y_test, y_predicted, average='macro'),
+        'Recall': recall_score(y_test, y_predicted, average='macro'),
+        'f1-score': f1_score(y_test, y_predicted, average='macro'),
+        'roc_auc': roc_auc_score(y_test_binary, y_predicted_prob, average='macro')
+    }
 
-# Display result
-print("Accuracy: ", accuracy)
-print("Precision: ", precision)
-print("Recall: ", recall)
-print("F1 Score: ", f1)
-print("ROC AUC: ", roc)
-print("Confusion Matrix: \n", cm_df)
+    metrics_report=classification_report(y_test, y_predicted)
+    return metrics, metrics_report, confusionMatrix, categories
 
+# Export & save confusion matrix of KNN
+def save_confusion_matrix(confusionMatrix, categories):
+    fig, ax=plt.subplots(figsize=(6,6))
+    displayMatrix=confusion_matrix(confusion_matrix=confusionMatrix, labels=categories)
+    displayMatrix.plot(ax=ax)
+    plt.title("KNN Confusion Matrix")
+    plt.savefig("../results/figures/knn_confusion_matrix.png")
+    plt.close(fig)
+
+def save_best_param(best_param):
+    df=pd.DataFrame([best_param])
+    path=Path("../results/tuning/knn_best_param.csv")
+    df.to_csv(path, index=False)
+
+def save_metrics(metrics):
+    df=pd.DataFrame([metrics])
+    path=Path("../results/metrics/knn_metrics.csv")
+    df.to_csv(path, index=False)
