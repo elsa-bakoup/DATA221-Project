@@ -18,6 +18,7 @@ def save_to_csv(X_train, X_test, y_train, y_test):
     X_test.to_csv('../data/split/X_test.csv', index = False)
     y_train.to_csv('../data/split/y_train.csv', index = False)
     y_test.to_csv('../data/split/y_test.csv', index = False)
+    return
 
 
 
