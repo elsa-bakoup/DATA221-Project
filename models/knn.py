@@ -10,7 +10,7 @@ from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_sc
     classification_report
 from sklearn.preprocessing import label_binarize
 
-from models.logistic_regression import MODEL_NAME
+from models.logistic_regression import MODEL_NAME, tune_model
 from shared.preprocess import build_processor
 from shared.preprocess import clean_raw_data
 # Model name
@@ -48,8 +48,6 @@ param_grid_knn={
     "classifier__weights": ["uniform","distance"],
     "classifier__metric": ["euclidean", "manhattan"]
 }
-
-X_train, X_test, y_train, y_test=split_data(load_clean_data())
 
 def grid_search_knn(param_grid_knn, knn_model, X_train, y_train):
     cross_validation=StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
@@ -101,3 +99,24 @@ def save_metrics(metrics):
     df=pd.DataFrame([metrics])
     path=Path("../results/metrics/knn_metrics.csv")
     df.to_csv(path, index=False)
+
+
+def main():
+    X_train, X_test, y_train, y_test=split_data(load_clean_data())
+
+    preprocessor=build_processor(X_train)
+    knn_model=build_knn_model(preprocessor)
+    grid=tune_model(knn_model, param_grid_knn, X_train, y_train)
+
+    best_model=grid.best_estimator_
+    best_param=grid.best_params_
+
+    metrics, metrics_report, confusionMatrix, categories=model_evaluation(grid, X_test, y_test)
+
+    save_best_param(best_param)
+    save_metrics(metrics)
+    save_confusion_matrix(confusionMatrix, categories)
+    save_permutation_importance(best_model)
+
+
+
