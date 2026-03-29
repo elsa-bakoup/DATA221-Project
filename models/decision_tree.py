@@ -11,7 +11,7 @@ with zipfile.ZipFile("sleep-health-and-lifestyle-dataset.zip", "r") as zip_ref:
 dataset = pd.read_csv("data/Sleep_health_and_lifestyle_dataset.csv")
 
 # Features + target variables
-feature_matrix = dataset.drop(columns=['Sleep Disorder'])
+feature_matrix = dataset.drop(columns=['Sleep Disorder', 'Person ID']) # dropping target variable and uninformative column
 feature_matrix = pd.get_dummies(feature_matrix)
 
 target_variable = dataset["Sleep Disorder"].fillna("None")
