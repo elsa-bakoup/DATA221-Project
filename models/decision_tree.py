@@ -39,3 +39,6 @@ for train_index, val_index in skf.split(features_train, labels_train):
 
     accuracy_scores.append(accuracy_score(labels_val, predicted_val))
 
+# Train final model on full training data
+final_model = DecisionTreeClassifier(criterion='entropy', max_depth=7, min_samples_split=4)
+final_model.fit(features_train, labels_train)
