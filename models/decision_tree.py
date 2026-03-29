@@ -1,6 +1,6 @@
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, roc_auc_score
+from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, roc_auc_score, confusion_matrix
 import pandas as pd
 import zipfile
 
@@ -47,6 +47,17 @@ final_model.fit(features_train, labels_train)
 predicted_labels = final_model.predict(features_test)
 predicted_probabilities = final_model.predict_proba(features_test)
 
+
+# Computing and formatting the confusion matrix
+labels_order = ["None", "Insomnia", "Sleep Apnea"]
+
+cm = confusion_matrix(labels_test, predicted_labels, labels=labels_order)
+cm_df = pd.DataFrame(
+    cm,
+    index=labels_order,
+    columns=labels_order
+)
+
 # Evaluation metrics
 accuracy = sum(accuracy_scores) / len(accuracy_scores)
 precision = precision_score(labels_test, predicted_labels, average='weighted')
@@ -59,3 +70,4 @@ print("Precision:", precision)
 print("Recall:", recall)
 print("F1 score:", f1)
 print("ROC AUC:", roc_auc)
+print(cm_df)
