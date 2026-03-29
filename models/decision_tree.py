@@ -42,3 +42,7 @@ for train_index, val_index in skf.split(features_train, labels_train):
 # Train final model on full training data
 final_model = DecisionTreeClassifier(criterion='entropy', max_depth=7, min_samples_split=4)
 final_model.fit(features_train, labels_train)
+
+# Test predictions
+predicted_labels = final_model.predict(features_test)
+predicted_probabilities = final_model.predict_proba(features_test)
