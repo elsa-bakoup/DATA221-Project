@@ -1,24 +1,49 @@
-from sklearn.model_selection import train_test_split, StratifiedKFold
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, roc_auc_score
+import json
+
 import pandas as pd
-import zipfile
+import matplotlib.pyplot as plt
 
-# Loading the data from the zip file
-with zipfile.ZipFile("sleep-health-and-lifestyle-dataset.zip", "r") as zip_ref:
-    zip_ref.extractall("data")
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    ConfusionMatrixDisplay,
+    classification_report,
+    roc_auc_score
+)
+from shared.preprocess import build_processor
 
-dataset = pd.read_csv("data/Sleep_health_and_lifestyle_dataset.csv")
+# The model name
+MODEL_NAME = "logistic_regression"
 
-# Features + target variables
-feature_matrix = dataset.drop(columns=['Sleep Disorder'])
-feature_matrix = pd.get_dummies(feature_matrix)
+def load_split_data():
+    X_train = pd.read_csv("../data/split/X_train.csv")
+    X_test = pd.read_csv("../data/split/X_test.csv")
+    y_train = pd.read_csv("../data/split/y_train.csv", keep_default_na = False).squeeze("columns")
+    y_test = pd.read_csv("../data/split/y_test.csv", keep_default_na = False).squeeze("columns")
 
-target_variable = dataset["Sleep Disorder"].fillna("None")
+    return X_train, X_test, y_train, y_test
 
-# Train-test split
-features_train, features_test, labels_train, labels_test = train_test_split(
-    feature_matrix, target_variable, test_size=0.2, stratify=target_variable, random_state=42)
+def build_model(processor):
+    # Build a logistic regression model with a consistent pipeline
 
-# Stratified K-Fold
-skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    logistic_regression_pipeline_model = Pipeline([
+        ("preprocessor", build_processor(processor)),
+        ("classifier", LogisticRegression(random_state=42))
+    ])
+
+    return logistic_regression_pipeline_model
+
+# Hyperparameter grid for tuning
+param_grid = {
+    "classifier__C": [0.001, 0.01, 0.1, 1, 10, 100],
+    "classifier__class_weight": [None, "balanced"],
+    "classifier__solver": ["lbfgs", "newton-cg", "saga"],
+    "classifier__penalty": ["l2"],
+    "classifier__max_iter": [2000]
+}
