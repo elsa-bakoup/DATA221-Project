@@ -22,3 +22,20 @@ features_train, features_test, labels_train, labels_test = train_test_split(
 
 # Stratified K-Fold
 skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+accuracy_scores = []
+
+for train_index, val_index in skf.split(features_train, labels_train):
+    feature_tr = features_train.iloc[train_index]
+    feature_val = features_train.iloc[val_index]
+    labels_tr = labels_train.iloc[train_index]
+    labels_val = labels_train.iloc[val_index]
+
+    # new model each fold
+    model = DecisionTreeClassifier(criterion='entropy', max_depth=7, min_samples_split=4)
+
+    model.fit(feature_tr, labels_tr)
+    predicted_val = model.predict(feature_val)
+
+    accuracy_scores.append(accuracy_score(labels_val, predicted_val))
+
