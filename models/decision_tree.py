@@ -46,3 +46,16 @@ final_model.fit(features_train, labels_train)
 # Test predictions
 predicted_labels = final_model.predict(features_test)
 predicted_probabilities = final_model.predict_proba(features_test)
+
+# Evaluation metrics
+accuracy = sum(accuracy_scores) / len(accuracy_scores)
+precision = precision_score(labels_test, predicted_labels, average='weighted')
+recall = recall_score(labels_test, predicted_labels, average='weighted')
+f1 = f1_score(labels_test, predicted_labels, average='weighted')
+roc_auc = roc_auc_score(labels_test, predicted_probabilities, multi_class='ovr', average='weighted')
+
+print("Accuracy:", accuracy)
+print("Precision:", precision)
+print("Recall:", recall)
+print("F1 score:", f1)
+print("ROC AUC:", roc_auc)
