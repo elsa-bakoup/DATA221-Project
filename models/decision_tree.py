@@ -39,7 +39,7 @@ def build_model(preprocessor):
     return decision_tree_pipeline_model
 
 
-# Hyperparameter grid (based on your original config + tuning)
+# Hyperparameter grid (based on my original config + tuning)
 param_grid = {
     "classifier__criterion": ["gini", "entropy"],
     "classifier__max_depth": [3, 5, 7, 10, None],
