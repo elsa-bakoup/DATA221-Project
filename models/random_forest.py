@@ -160,7 +160,6 @@ def main():
     preprocessor = build_processor(X_train)
     random_forest_model = build_model(preprocessor)
     grid = tune_model(random_forest_model, param_grid, X_train, y_train)
-
     best_model = grid.best_estimator_
     best_params = grid.best_params_
 
