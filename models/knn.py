@@ -1,6 +1,4 @@
-from pathlib import Path
 import json
-
 
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -100,8 +98,7 @@ def save_best_params(best_params):
 
 def save_metrics(metrics):
     df=pd.DataFrame([metrics])
-    path=Path("../results/metrics/knn_metrics.csv")
-    df.to_csv(path, index=False)
+    df.to_csv("../results/metrics/knn_metrics.csv", index=False)
 
 def save_permutation_importance(best_model, X_test, y_test):
     importance=permutation_importance(
