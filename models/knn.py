@@ -71,7 +71,7 @@ def model_evaluation(grid_search_knn, X_test, y_test):
     cm=confusion_matrix(y_test, y_predicted)
 
     metrics={
-        'Model': MODEL_NAME,
+        'model': MODEL_NAME,
         'accuracy': accuracy_score(y_test, y_predicted),
         'precision_macro': precision_score(y_test, y_predicted, average='macro'),
         'recall_macro': recall_score(y_test, y_predicted, average='macro'),
