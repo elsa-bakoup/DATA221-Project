@@ -72,11 +72,11 @@ def model_evaluation(grid_search_knn, X_test, y_test):
 
     metrics={
         'Model': MODEL_NAME,
-        'Accuracy': accuracy_score(y_test, y_predicted),
-        'Precision': precision_score(y_test, y_predicted, average='macro'),
-        'Recall': recall_score(y_test, y_predicted, average='macro'),
-        'f1_score': f1_score(y_test, y_predicted, average='macro'),
-        'Roc_auc': roc_auc_score(y_test_binary, y_predicted_prob,multi_class='ovr', average='macro')
+        'accuracy': accuracy_score(y_test, y_predicted),
+        'precision_macro': precision_score(y_test, y_predicted, average='macro'),
+        'recall_macro': recall_score(y_test, y_predicted, average='macro'),
+        'f1_macro': f1_score(y_test, y_predicted, average='macro'),
+        'roc_auc': roc_auc_score(y_test_binary, y_predicted_prob,multi_class='ovr', average='macro')
     }
 
     metrics_report=classification_report(y_test, y_predicted)

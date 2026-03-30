@@ -79,11 +79,11 @@ def evaluate_model(best_model, X_test, y_test):
 
     metrics = {
         'Model': MODEL_NAME,
-        'Accuracy': accuracy_score(y_test, y_pred),
-        'Precision': precision_score(y_test, y_pred, average="macro", zero_division=0),
-        'Recall': recall_score(y_test, y_pred, average="macro", zero_division=0),
-        'f1_score': f1_score(y_test, y_pred, average="macro", zero_division=0),
-        'Roc_auc': roc_auc,
+        'accuracy': accuracy_score(y_test, y_pred),
+        'precision_macro': precision_score(y_test, y_pred, average="macro", zero_division=0),
+        'recall_macro': recall_score(y_test, y_pred, average="macro", zero_division=0),
+        'f1_macro': f1_score(y_test, y_pred, average="macro", zero_division=0),
+        'roc_auc': roc_auc,
     }
 
     report = classification_report(y_test, y_pred)
