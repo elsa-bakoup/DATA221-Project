@@ -1,4 +1,6 @@
 from pathlib import Path
+import json
+
 
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -92,10 +94,9 @@ def save_confusion_matrix(confusionMatrix, classes):
     plt.savefig("../results/figures/knn_confusion_matrix.png")
     plt.close(fig)
 
-def save_best_param(best_param):
-    df=pd.DataFrame([best_param])
-    path=Path("../results/tuning/knn_best_param.csv")
-    df.to_csv(path, index=False)
+def save_best_params(best_params):
+    with open("../results/tuning/knn_best_params.json", "w", encoding="utf-8") as file:
+        json.dump(best_params, file)
 
 def save_metrics(metrics):
     df=pd.DataFrame([metrics])
@@ -145,7 +146,7 @@ def main():
 
     metrics, metrics_report, confusionMatrix, classes=model_evaluation(grid, X_test, y_test)
 
-    save_best_param(best_param)
+    save_best_params(best_param)
     save_metrics(metrics)
     save_confusion_matrix(confusionMatrix, classes)
     save_permutation_importance(best_model,X_test,y_test)
