@@ -9,6 +9,7 @@ from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, confusion_matrix, roc_auc_score, classification_report
 from sklearn.preprocessing import label_binarize
+
 from shared.preprocess import build_processor
 from shared.preprocess import clean_raw_data
 from sklearn.metrics import ConfusionMatrixDisplay
@@ -151,16 +152,13 @@ def main():
 
     print("Best parameters: ", best_param)
 
-    print("\n Final Test Metrics: ")
+    print("Final Test Metrics: ")
     for key, value in metrics.items():
         print(f"{key}: {value}")
 
-    print("\n Final Test Metrics: ")
+    print("Metrics Report: ")
     print(metrics_report)
 
-    print("\n Final Confusion Matrix: ")
-    print(confusionMatrix)
-if __name__ == "__main__":
-    main()
+main()
 
 
