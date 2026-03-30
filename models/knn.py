@@ -118,18 +118,18 @@ def save_permutation_importance(best_model, X_test, y_test):
         "importance_std": importance.importances_std
      }).sort_values(by="importance_mean", ascending=False)
 
-    importance_df.to_csv("../results/interpretability/knn_permutation_importance.csv", index=False)
+    importance_df.to_csv("../results/interpretability/knn/knn_permutation_importance.csv", index=False)
 
     plt.figure(figsize=(10,6))
     plt.barh(importance_df["feature"],
              importance_df["importance_mean"],
              xerr=importance_df["importance_std"])
     plt.title("KNN Permutation Importance")
-    plt.xlabel("Permutation Importance (mean decrease in accuracy")
+    plt.xlabel("Permutation Importance (mean decrease in accuracy)")
     plt.ylabel("Feature")
     plt.gca().invert_yaxis()
     plt.tight_layout()
-    plt.savefig("../results/interpretability/knn_permutation_importance.png", dpi=300)
+    plt.savefig("../results/interpretability/knn/knn_permutation_importance.png", dpi=300)
     plt.close()
 
 
