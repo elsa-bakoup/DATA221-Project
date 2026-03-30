@@ -107,7 +107,7 @@ def save_permutation_importance(best_model, X_test, y_test):
         best_model,
         X_test,
         y_test,
-        n_repeats=10,
+        n_repeats=30,
         random_state=42,
         scoring="recall_macro"
     )
