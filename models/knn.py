@@ -17,7 +17,7 @@ from sklearn.metrics import ConfusionMatrixDisplay
 # Model name
 MODEL_NAME="KNN"
 # Load dataset
-dataset = pd.read_csv("data/Sleep_health_and_lifestyle_dataset.csv")
+dataset = pd.read_csv("../data/raw/Sleep_health_and_lifestyle_dataset.csv")
 
 # Target variable
 TARGET_COLUMN = "Sleep Disorder"
