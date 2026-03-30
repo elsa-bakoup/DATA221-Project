@@ -31,7 +31,7 @@ def split_data(cleaned_data):
     X=cleaned_data.drop(columns=[TARGET_COLUMN])
     y=cleaned_data[TARGET_COLUMN]
 
-    X_train, X_test, y_train, y_test=train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test=train_test_split(X, y,stratify=y, test_size=0.2, random_state=42)
     return X_train, X_test, y_train, y_test
 
 # Build knn model
