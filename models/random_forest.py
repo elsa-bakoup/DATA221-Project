@@ -1,24 +1,187 @@
-from sklearn.model_selection import train_test_split, StratifiedKFold
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, roc_auc_score
+import json
 import pandas as pd
-import zipfile
+import matplotlib.pyplot as plt
 
-# Loading the data from the zip file
-with zipfile.ZipFile("sleep-health-and-lifestyle-dataset.zip", "r") as zip_ref:
-    zip_ref.extractall("data")
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    ConfusionMatrixDisplay,
+    classification_report,
+    roc_auc_score
+)
+from sklearn.preprocessing import label_binarize
+from shared.preprocess import build_processor
 
-dataset = pd.read_csv("data/Sleep_health_and_lifestyle_dataset.csv")
+MODEL_NAME = "random_forest"
 
-# Features + target variables
-feature_matrix = dataset.drop(columns=['Sleep Disorder'])
-feature_matrix = pd.get_dummies(feature_matrix)
 
-target_variable = dataset["Sleep Disorder"].fillna("None")
+def load_split_data():
+    X_train = pd.read_csv("../data/split/X_train.csv")
+    X_test = pd.read_csv("../data/split/X_test.csv")
+    y_train = pd.read_csv("../data/split/y_train.csv", keep_default_na=False).squeeze("columns")
+    y_test = pd.read_csv("../data/split/y_test.csv", keep_default_na=False).squeeze("columns")
 
-# Train-test split
-features_train, features_test, labels_train, labels_test = train_test_split(
-    feature_matrix, target_variable, test_size=0.2, stratify=target_variable, random_state=42)
+    return X_train, X_test, y_train, y_test
 
-# Stratified K-Fold
-skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+def build_model(preprocessor):
+    random_forest_pipeline_model = Pipeline([
+        ("preprocessor", preprocessor),
+        ("classifier", RandomForestClassifier(random_state=42))
+    ])
+    return random_forest_pipeline_model
+param_grid = {
+    "classifier__n_estimators": [100, 200],
+    "classifier__max_depth": [None, 5, 7, 10],
+    "classifier__min_samples_split": [2, 4, 6],
+    "classifier__min_samples_leaf": [1, 2, 4],
+    "classifier__class_weight": [None, "balanced"]
+}
+
+def tune_model(random_forest_pipeline_model, param_grid, X_train, y_train):
+    cross_validation = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+    grid = GridSearchCV(
+        random_forest_pipeline_model,
+        param_grid=param_grid,
+        cv=cross_validation,
+        scoring="recall_macro",
+        n_jobs=-1
+    )
+    grid.fit(X_train, y_train)
+    return grid
+
+
+def evaluate_model(best_model, X_test, y_test):
+    y_pred = best_model.predict(X_test)
+    y_pred_prob = best_model.predict_proba(X_test)
+
+    classes = sorted(y_test.unique())
+    y_test_binary = label_binarize(y_test, classes=classes)
+
+    roc_auc = roc_auc_score(
+        y_test_binary,
+        y_pred_prob,
+        multi_class="ovr",
+        average="macro"
+    )
+
+    cm = confusion_matrix(y_test, y_pred, labels=classes)
+
+    metrics = {
+        "model": MODEL_NAME,
+        "accuracy": accuracy_score(y_test, y_pred),
+        "precision_macro": precision_score(y_test, y_pred, average="macro", zero_division=0),
+        "recall_macro": recall_score(y_test, y_pred, average="macro", zero_division=0),
+        "f1_macro": f1_score(y_test, y_pred, average="macro", zero_division=0),
+        "roc_auc": roc_auc
+    }
+
+    report = classification_report(y_test, y_pred, zero_division=0)
+    return metrics, cm, classes, report
+
+
+def save_best_params(best_params):
+    with open("../results/tuning/random_forest_best_params.json", "w", encoding="utf-8") as file:
+        json.dump(best_params, file)
+
+
+def save_metrics(metrics):
+    pd.DataFrame([metrics]).to_csv(
+        "../results/metrics/random_forest_metrics.csv",
+        index=False
+    )
+
+
+def save_confusion_matrix(cm, classes):
+    fig, ax = plt.subplots(figsize=(6, 6))
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classes)
+    disp.plot(ax=ax, colorbar=False)
+    plt.title("Random Forest Confusion Matrix")
+    plt.tight_layout()
+    plt.savefig("../results/figures/random_forest_confusion_matrix.png", dpi=300)
+    plt.close(fig)
+
+
+def save_feature_importance(best_model):
+    preprocess = best_model.named_steps["preprocessor"]
+    classifier = best_model.named_steps["classifier"]
+
+    feature_names = preprocess.get_feature_names_out()
+    importances = classifier.feature_importances_
+
+    importance_df = pd.DataFrame({
+        "feature": feature_names,
+        "importance": importances
+    }).sort_values("importance", ascending=False)
+
+    importance_df.to_csv(
+        "../results/interpretability/random_forest/random_forest_feature_importance.csv",
+        index=False
+    )
+
+
+def save_feature_importance_plot(best_model):
+    preprocess = best_model.named_steps["preprocessor"]
+    classifier = best_model.named_steps["classifier"]
+
+    feature_names = preprocess.get_feature_names_out()
+    importances = classifier.feature_importances_
+
+    importance_df = pd.DataFrame({
+        "feature": feature_names,
+        "importance": importances
+    }).sort_values("importance", ascending=True)
+
+    top_10 = importance_df.tail(10)
+
+    plt.figure(figsize=(10, 6))
+    plt.barh(top_10["feature"], top_10["importance"])
+    plt.title("Top 10 Random Forest Feature Importances")
+    plt.xlabel("Importance")
+    plt.ylabel("Feature")
+    plt.tight_layout()
+    plt.savefig(
+        "../results/interpretability/random_forest/random_forest_feature_importance.png",
+        dpi=300
+    )
+    plt.close()
+
+
+def main():
+    X_train, X_test, y_train, y_test = load_split_data()
+
+    preprocessor = build_processor(X_train)
+    random_forest_model = build_model(preprocessor)
+    grid = tune_model(random_forest_model, param_grid, X_train, y_train)
+
+    best_model = grid.best_estimator_
+    best_params = grid.best_params_
+
+    metrics, cm, classes, report = evaluate_model(best_model, X_test, y_test)
+
+    save_best_params(best_params)
+    save_metrics(metrics)
+    save_confusion_matrix(cm, classes)
+    save_feature_importance(best_model)
+    save_feature_importance_plot(best_model)
+
+    print("Best Parameters:")
+    print(best_params)
+
+    print("\nFinal Test Metrics:")
+    for key, value in metrics.items():
+        print(f"{key}: {value}")
+
+    print("\nClassification Report:")
+    print(report)
+
+
+if __name__ == "__main__":
+    main()
