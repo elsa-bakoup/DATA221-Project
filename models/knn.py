@@ -71,11 +71,11 @@ def model_evaluation(grid_search_knn, X_test, y_test):
     cm=confusion_matrix(y_test, y_predicted)
 
     metrics={
-        'model': MODEL_NAME,
-        'Accuracy': accuracy_score(y_test, y_predicted),
-        'Precision': precision_score(y_test, y_predicted, average='macro'),
-        'Recall': recall_score(y_test, y_predicted, average='macro'),
-        'f1-score': f1_score(y_test, y_predicted, average='macro'),
+        'Model': MODEL_NAME,
+        'accuracy': accuracy_score(y_test, y_predicted),
+        'precision_macro': precision_score(y_test, y_predicted, average='macro'),
+        'recall_macro': recall_score(y_test, y_predicted, average='macro'),
+        'f1_macro': f1_score(y_test, y_predicted, average='macro'),
         'roc_auc': roc_auc_score(y_test_binary, y_predicted_prob,multi_class='ovr', average='macro')
     }
 
