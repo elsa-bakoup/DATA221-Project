@@ -1,0 +1,26 @@
+feature,importance
+categorical__BMI Category_Normal,0.5225301948945436
+numeric__Physical Activity Level,0.23084088806915368
+numeric__Systolic BP,0.08773079016454684
+numeric__Sleep Duration,0.05351942167003302
+numeric__Daily Steps,0.05054663922523717
+numeric__Age,0.04319212453173415
+categorical__Occupation_Accountant,0.01163994144475164
+numeric__Stress Level,0.0
+numeric__Quality of Sleep,0.0
+numeric__Diastolic BP,0.0
+numeric__Heart Rate,0.0
+categorical__Gender_Male,0.0
+categorical__Gender_Female,0.0
+categorical__Occupation_Engineer,0.0
+categorical__Occupation_Lawyer,0.0
+categorical__Occupation_Manager,0.0
+categorical__Occupation_Doctor,0.0
+categorical__Occupation_Nurse,0.0
+categorical__Occupation_Sales Representative,0.0
+categorical__Occupation_Scientist,0.0
+categorical__Occupation_Salesperson,0.0
+categorical__Occupation_Software Engineer,0.0
+categorical__Occupation_Teacher,0.0
+categorical__BMI Category_Obese,0.0
+categorical__BMI Category_Overweight,0.0

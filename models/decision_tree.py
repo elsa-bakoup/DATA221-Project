@@ -80,7 +80,7 @@ def evaluate_model(best_model, X_test, y_test):
     cm = confusion_matrix(y_test, y_pred)
 
     metrics = {
-        'Model': MODEL_NAME,
+        'model': MODEL_NAME,
         'accuracy': accuracy_score(y_test, y_pred),
         'precision_macro': precision_score(y_test, y_pred, average="macro", zero_division=0),
         'recall_macro': recall_score(y_test, y_pred, average="macro", zero_division=0),
