@@ -1,0 +1,2 @@
+model,accuracy,precision_macro,recall_macro,f1_macro,roc_auc
+decision_tree,0.9466666666666667,0.9462915601023019,0.9125,0.9252525252525253,0.9944629339688115
